@@ -103,7 +103,7 @@ void learning_from_file(std::string name) {
 
     t1 = std::clock();
 
-    if (strings.size() <100000) {
+    if (strings.size() <10000) {
         //std::cout << "less";
         for (auto str = strings.begin(); str != strings.end(); ++str) {
             for (int i = 0; i <  str -> size(); ++i) {
@@ -112,7 +112,7 @@ void learning_from_file(std::string name) {
             ++counting['\n'];
         }
     } else {
-        for (int k = 0; k < 100000; ++k) {
+        for (int k = 0; k < 10000; ++k) {
             size_t l = rand() % strings.size();
             for (int i = 0; i < strings[l].size(); ++i) {
                 ++counting[strings[l][i]];
@@ -199,12 +199,16 @@ void decoding(std::vector<std::string> enc_strings) {
     std::clock_t t1;
     t1 = std::clock();
 
+    std::ofstream file_out("decoded_encoded");
+
+
 
     node *nd = root;
     int k = -1;
     int tmp = 0;
+    std::string tmp_string;
     for (int j = 0; j < enc_strings.size(); ++j) {
-
+        tmp_string = "";
         std::string encoded = enc_strings[j];
         for (auto i = encoded.begin(); i != encoded.end(); ++i) {
             ++after;
@@ -217,6 +221,7 @@ void decoding(std::vector<std::string> enc_strings) {
                 if (nd -> is_leaf == true) {
                     if (nd -> c != Esc) {
                         //std::cout << char(nd -> c);
+                        tmp_string += char(nd -> c);
                         nd = root;
                     } else {
 
@@ -232,18 +237,28 @@ void decoding(std::vector<std::string> enc_strings) {
                 --k;
             } else {
                 tmp += int(*i) - int('0');
+                tmp_string += char(tmp);
                 //std::cout << char(tmp);
                 --k;
 
             }
+
         }
         //std::cout << '\n';
+        tmp_string += '\n';
+        file_out << tmp_string;
     }
     std::cout << "Decoding : " <<(std::clock() - t1)/(double) CLOCKS_PER_SEC << '\n';
     after /= 8;
 
     std::cout << "Before : " << before << '\n' << "After : " << after << std::endl;
+    file_out.close();
+
+
 }
+
+
+
 
 
 
@@ -251,6 +266,8 @@ int main() {
     std::string input = "data1";
     learning_from_file(input);
     decoding(encoding("data1"));
+
+
 
     //std::cout << std::bitset<8>(')').to_string();
 
