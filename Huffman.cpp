@@ -263,9 +263,13 @@ void decoding(std::vector<std::string> enc_strings) {
 
 
 int main() {
-    std::string input = "data1";
+    std::string input;
+
+    std::cout << "Enter File Path : ";
+    std::cin >>  input;
+
     learning_from_file(input);
-    decoding(encoding("data1"));
+    decoding(encoding(input));
 
 
 
