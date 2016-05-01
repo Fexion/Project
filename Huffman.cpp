@@ -9,8 +9,8 @@
 #include <ctime>
 #include <stdlib.h>
 
-#define Eof 257
-#define Esc 256
+#define Eof 128
+#define Esc 129
 
 size_t before = 0, after = 0;
 
@@ -62,18 +62,25 @@ std::vector<bool> existence_of_chars(258, false);
 std::vector <std::string> encoded_symbols(258, "");
 
 void filling_symbols(node *nd, std::string bits) {
+    //std::cout << "start" << std::endl;
 
     if (nd -> is_leaf) {
-        encoded_symbols[nd -> c] = bits;
-        existence_of_chars[nd -> c] = true;
+        //std::cout << "leaf start       "<<nd -> c<<std::endl;
+        encoded_symbols[nd -> c + 128] = bits;
+        existence_of_chars[nd -> c + 128] = true;
+
+        //std::cout << "leaf end" << std::endl;
+
         return;
     }
     //std::cout << bits << std::endl;
 
     if (nd -> left) {
+        //std::cout << "go left" << std::endl;
         filling_symbols(nd -> left, bits + std::to_string(1));
     }
     if (nd -> right) {
+        //std::cout << "go right" << std::endl;
         filling_symbols(nd -> right, bits + std::to_string(0));
     }
 }
@@ -88,13 +95,13 @@ void learning_from_file(std::string name) {
 
     counting[Eof] = 1;
     counting[Esc] = 1;
+
     std::vector<std::string> strings;
     for (std::string str; std::getline(f, str);) {
         strings.push_back(str);
         before += str.size();
     }
     //std::cout << strings.size() << '\n';
-
 
     std::clock_t t1;
     f.close();
@@ -155,6 +162,7 @@ void learning_from_file(std::string name) {
 
     root = nodes[0];
     filling_symbols(root, "");
+
     std::cout << "Learning From file time : " <<(std::clock() - t1)/(double) CLOCKS_PER_SEC << '\n';
 
 }
@@ -176,10 +184,11 @@ std::vector<std::string> encoding(std::string name) {
         enc_strings.push_back("");
         for (int i = 0; i < str.size(); ++i) {
             c = str[i];
-            if (existence_of_chars[c]) {
-                enc_strings[enc_strings.size()-1] += encoded_symbols[c];
+            if (existence_of_chars[c + 128]) {
+                //std::cout << "qweasdzxc" << std::endl;
+                enc_strings[enc_strings.size()-1] += encoded_symbols[c + 128];
             } else {
-                enc_strings[enc_strings.size()-1] += encoded_symbols[Esc];
+                enc_strings[enc_strings.size()-1] += encoded_symbols[Esc + 128];
                 enc_strings[enc_strings.size()-1] += std::bitset<8>(c).to_string();
             }
         }
@@ -267,7 +276,7 @@ int main() {
 
     std::cout << "Enter File Path : ";
     std::cin >>  input;
-
+    //input = "data3";
     learning_from_file(input);
     decoding(encoding(input));
 
