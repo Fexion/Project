@@ -13,7 +13,7 @@
 #define Esc 129
 
 size_t before = 0, after = 0;
-
+size_t max_size;
 
 struct node {
     size_t num;
@@ -59,9 +59,9 @@ node *root = new node;
 
 std::vector<bool> existence_of_chars(258, false);
 
-std::vector <std::string> encoded_symbols(258, "");
+std::vector <std::vector<bool>> encoded_symbols(258);
 
-void filling_symbols(node *nd, std::string bits) {
+void filling_symbols(node *nd, std::vector<bool> bits) {
     //std::cout << "start" << std::endl;
 
     if (nd -> is_leaf) {
@@ -77,11 +77,16 @@ void filling_symbols(node *nd, std::string bits) {
 
     if (nd -> left) {
         //std::cout << "go left" << std::endl;
-        filling_symbols(nd -> left, bits + std::to_string(1));
+        bits.push_back(1);
+        filling_symbols(nd -> left, bits);
+        bits.pop_back();
+
     }
     if (nd -> right) {
         //std::cout << "go right" << std::endl;
-        filling_symbols(nd -> right, bits + std::to_string(0));
+        bits.push_back(0);
+        filling_symbols(nd -> right, bits);
+        bits.pop_back();
     }
 }
 
@@ -161,7 +166,7 @@ void learning_from_file(std::string name) {
 
 
     root = nodes[0];
-    filling_symbols(root, "");
+    filling_symbols(root, {});
 
     std::cout << "Learning From file time : " <<(std::clock() - t1)/(double) CLOCKS_PER_SEC << '\n';
 
@@ -170,7 +175,7 @@ void learning_from_file(std::string name) {
 
 
 
-std::vector<std::string> encoding(std::string name) {
+std::vector<std::vector <bool> > encoding(std::string name) {
     std::ifstream f(name);
     int c;
 
@@ -178,18 +183,26 @@ std::vector<std::string> encoding(std::string name) {
     std::clock_t t1;
     t1 = std::clock();
 
+    std::bitset<8> tmp;
 
-    std::vector<std::string> enc_strings;
+    std::vector<std::vector<bool>> enc_strings;
     for (std::string str; std::getline(f, str);) {
-        enc_strings.push_back("");
+        enc_strings.push_back({});
         for (int i = 0; i < str.size(); ++i) {
             c = str[i];
             if (existence_of_chars[c + 128]) {
                 //std::cout << "qweasdzxc" << std::endl;
-                enc_strings[enc_strings.size()-1] += encoded_symbols[c + 128];
+                for (int i = 0; i < encoded_symbols[c + 128].size(); ++i) {
+                    enc_strings[enc_strings.size()-1].push_back(encoded_symbols[c + 128][i]);
+                }
             } else {
-                enc_strings[enc_strings.size()-1] += encoded_symbols[Esc + 128];
-                enc_strings[enc_strings.size()-1] += std::bitset<8>(c).to_string();
+                for (int i = 0; i < encoded_symbols[Esc + 128].size(); ++i) {
+                    enc_strings[enc_strings.size()-1].push_back(encoded_symbols[Esc + 128][i]);
+                }
+                tmp = std::bitset<8>(c);
+                for (int i = 0; i < tmp.size(); ++i) {
+                    enc_strings[enc_strings.size()-1].push_back(tmp[i] - '0');
+                }
             }
         }
     }
@@ -202,7 +215,7 @@ std::vector<std::string> encoding(std::string name) {
     return enc_strings;
 }
 
-void decoding(std::vector<std::string> enc_strings) {
+void decoding(std::vector<std::vector<bool>> enc_strings) {
 
 
     std::clock_t t1;
@@ -218,16 +231,16 @@ void decoding(std::vector<std::string> enc_strings) {
     std::string tmp_string;
     for (int j = 0; j < enc_strings.size(); ++j) {
         tmp_string = "";
-        std::string encoded = enc_strings[j];
+        std::vector<bool> encoded = enc_strings[j];
         for (auto i = encoded.begin(); i != encoded.end(); ++i) {
             ++after;
             if (k < 0) {
-                if ((*i) == '1') {
+                if ((*i) == 1) {
                     nd = nd -> left;
                 }else {
-                    nd = nd -> right;{}
+                    nd = nd -> right;
                 }
-                if (nd -> is_leaf == true) {
+                if (nd -> is_leaf) {
                     if (nd -> c != Esc) {
                         //std::cout << char(nd -> c);
                         tmp_string += char(nd -> c);
@@ -241,11 +254,11 @@ void decoding(std::vector<std::string> enc_strings) {
                 }
             } else if (k > 0) {
 
-                tmp += (int(*i) - int('0')) << k;
+                tmp += (int(*i)) << k;
                 //std::cout << tmp << "   "<< *i << std::endl;
                 --k;
             } else {
-                tmp += int(*i) - int('0');
+                tmp += int(*i);
                 tmp_string += char(tmp);
                 //std::cout << char(tmp);
                 --k;
@@ -253,7 +266,6 @@ void decoding(std::vector<std::string> enc_strings) {
             }
 
         }
-        //std::cout << '\n';
         tmp_string += '\n';
         file_out << tmp_string;
     }
@@ -276,13 +288,9 @@ int main() {
 
     std::cout << "Enter File Path : ";
     std::cin >>  input;
-    //input = "data3";
     learning_from_file(input);
     decoding(encoding(input));
 
-
-
-    //std::cout << std::bitset<8>(')').to_string();
 
     return 0;
 }
