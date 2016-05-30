@@ -183,7 +183,7 @@ std::vector<std::vector <bool> > encoding(std::string name) {
     std::clock_t t1;
     t1 = std::clock();
 
-    std::bitset<8> tmp;
+    std::string tmp;
 
     std::vector<std::vector<bool>> enc_strings;
     for (std::string str; std::getline(f, str);) {
@@ -199,9 +199,9 @@ std::vector<std::vector <bool> > encoding(std::string name) {
                 for (int i = 0; i < encoded_symbols[Esc + 128].size(); ++i) {
                     enc_strings[enc_strings.size()-1].push_back(encoded_symbols[Esc + 128][i]);
                 }
-                tmp = std::bitset<8>(c);
+                tmp = std::bitset<8>(c).to_string();
                 for (int i = 0; i < tmp.size(); ++i) {
-                    enc_strings[enc_strings.size()-1].push_back(tmp[i]);
+                    enc_strings[enc_strings.size()-1].push_back(tmp[i] - '0');
                 }
             }
         }
