@@ -201,7 +201,7 @@ std::vector<std::vector <bool> > encoding(std::string name) {
                 }
                 tmp = std::bitset<8>(c);
                 for (int i = 0; i < tmp.size(); ++i) {
-                    enc_strings[enc_strings.size()-1].push_back(tmp[i] - '0');
+                    enc_strings[enc_strings.size()-1].push_back(tmp[i]);
                 }
             }
         }
